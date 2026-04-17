@@ -39,7 +39,7 @@ seedSuperAdmin.js
 
 ### 1. Clone the repository
 ```bash
-git clone <https://github.com/jesutofunmiisrael/saas-backend.git>
+git clone https://github.com/jesutofunmiisrael/saas-backend.git
 cd saas-backend
 ```
 
@@ -114,3 +114,22 @@ Authorization: Bearer <token>
 - Multi-tenant using companyId  
 - Simple and clean structure  
 - No extra features added
+
+
+---
+
+## Data Isolation (Multi-Tenant Security)
+
+All operations are strictly scoped using the authenticated user's `companyId`.
+
+- The backend does NOT trust any client-provided companyId
+- All queries use `req.user.companyId`
+- Prevents cross-company data access even if request data is manipulated
+
+Example:
+Employee update and fetch operations are protected by querying with both:
+- employee ID
+- authenticated companyId
+
+This ensures a company cannot access or modify another company’s data.
+
