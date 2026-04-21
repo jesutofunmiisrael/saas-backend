@@ -33,8 +33,20 @@ export const superAdminOnly = (req, res, next) => {
 };
 
 export const companyOnly = (req, res, next) => {
-  if (req.user.role !== "company") {
-    return res.status(403).json({ message: "Company access only" });
+  if (!["admin", "employee"].includes(req.user.role)) {
+    return res.status(403).json({
+      message: "Company access only",
+    });
+  }
+  next();
+};
+
+
+export const adminOnly = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Access denied: admin only",
+    });
   }
   next();
 };

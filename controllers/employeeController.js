@@ -1,8 +1,12 @@
 import Employee from "../MODEL/Employee.js";
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import User from "../MODEL/User.js";
+
 
 export const createEmployee = async (req, res) => {
   try {
-    const { name, email, position } = req.body;
+    const { name, email, position, password } = req.body;
 
     const companyId = req.user.companyId;
 
@@ -12,14 +16,29 @@ export const createEmployee = async (req, res) => {
       });
     }
 
-    const existingEmployee = await Employee.findOne({
+    const existingUser = await User.findOne({ email, companyId });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists in this company",
+      });
+    }
+
+    const existingEmployee = await Employee.findOne({ email, companyId });
+    if (existingEmployee) {
+      return res.status(400).json({
+        message: "Employee already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
       email,
+      password: hashedPassword,
+      role: "employee",
       companyId,
     });
-
-    if (existingEmployee) {
-      return res.status(400).json({ message: "Employee already exists" });
-    }
 
     const employee = await Employee.create({
       name,
@@ -30,15 +49,18 @@ export const createEmployee = async (req, res) => {
 
     res.status(201).json({
       message: "Employee created successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId,
+      },
       employee,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
 export const getCompanyEmployees = async (req, res) => {
   try {
     const companyId = req.user.companyId;
@@ -66,19 +88,20 @@ export const updateEmployee = async (req, res) => {
     const { id } = req.params;
     const { name, email, position } = req.body;
 
-    const companyId = req.user.companyId;
+    
+const companyId = req.user.companyId;
 
-    if (!companyId) {
-      return res.status(403).json({
-        message: "Access denied: company context missing",
-      });
-    }
+if (!companyId) {
+  return res.status(403).json({
+    message: "Access denied: company context missing",
+  });
+}
 
-    // Secure lookup: employee must belong to authenticated company
-    const employee = await Employee.findOne({
-      _id: id,
-      companyId,
-    });
+if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    message: "Invalid employee ID",
+  });
+}
 
     if (!employee) {
       return res.status(404).json({

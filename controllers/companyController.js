@@ -27,7 +27,7 @@ export const createCompany = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: "company",
+      role: "admin",
       companyId: company._id,
     });
 
