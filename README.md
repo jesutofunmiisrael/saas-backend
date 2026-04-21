@@ -6,8 +6,10 @@ This project is a minimal SaaS backend built with Node.js, Express, and MongoDB.
 It demonstrates a clean multi-tenant architecture where:
 - A super admin creates companies
 - Each company operates as an isolated account
-- Companies can log in
-- Companies can create and manage their own employees
+- Company admins manage employees within their organization
+- Employees belong strictly to their company
+
+The focus is on simplicity, clean structure, and secure backend logic.
 
 ---
 
@@ -22,56 +24,45 @@ It demonstrates a clean multi-tenant architecture where:
 
 ## Project Structure
 
-```
-/config
-/models
-/controllers
-/routes
-/middleware
-/utils
-server.js
-seedSuperAdmin.js
-```
+/config  
+/models  
+/controllers  
+/routes  
+/middleware  
+/utils  
+server.js  
+seedSuperAdmin.js  
 
 ---
 
 ## Setup Instructions
 
 ### 1. Clone the repository
-```bash
-git clone https://github.com/jesutofunmiisrael/saas-backend.git
-cd saas-backend
-```
+git clone https://github.com/jesutofunmiisrael/saas-backend.git  
+cd saas-backend  
 
 ### 2. Install dependencies
-```bash
-npm install
-```
+npm install  
 
 ### 3. Create .env file
-```
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-```
+PORT=5000  
+MONGO_URI=your_mongodb_connection_string  
+JWT_SECRET=your_secret_key  
 
 ---
 
 ## MongoDB Setup
 
 Add this IP in MongoDB Atlas:
-```
-0.0.0.0/0
-```
+0.0.0.0/0  
 
 ---
 
 ## Seed Super Admin
 
-```bash
-node seedSuperAdmin.js
-```
+node seedSuperAdmin.js  
 
+Default credentials:  
 Email: admin@example.com  
 Password: admin123  
 
@@ -79,57 +70,70 @@ Password: admin123
 
 ## Run Server
 
-```bash
-npm run dev
-```
+npm run dev  
 
 ---
 
 ## API Endpoints
 
 ### Auth
-- POST /api/auth/superadmin-login  
-- POST /api/auth/company-login  
+POST /api/auth/superadmin-login  
+POST /api/auth/company-login  
 
 ### Company
-- POST /api/company/create  
+POST /api/company/create  
 
 ### Employee
-- POST /api/employee/create  
-- GET /api/employee/all  
+POST /api/employee/create  
+GET /api/employee/all  
+PUT /api/employee/update/:id  
 
 ---
 
 ## Authentication
 
-Use:
-```
-Authorization: Bearer <token>
-```
+Authorization: Bearer <token>  
+
+---
+
+## Architecture Decisions
+
+### Multi-Tenant Isolation
+All operations are strictly scoped using the authenticated user's companyId.
+
+- Backend does NOT trust client-provided companyId  
+- All queries use req.user.companyId  
+- Prevents cross-company data access  
+
+Example:
+Employee operations use both employee ID and companyId to ensure strict isolation.
+
+---
+
+### Role-Based Access Control
+
+Roles:
+- superadmin
+- admin
+- employee
+
+Rules:
+- Superadmin creates companies  
+- Admin manages employees  
+- Employee has restricted access  
+
+---
+
+### Access Enforcement
+
+- Only admins can create employees  
+- Employees cannot create or modify other employees  
+- All access control is enforced in backend middleware  
 
 ---
 
 ## Notes
 
-- Multi-tenant using companyId  
-- Simple and clean structure  
-- No extra features added
-
-
----
-
-## Data Isolation (Multi-Tenant Security)
-
-All operations are strictly scoped using the authenticated user's `companyId`.
-
-- The backend does NOT trust any client-provided companyId
-- All queries use `req.user.companyId`
-- Prevents cross-company data access even if request data is manipulated
-
-Example:
-Employee update and fetch operations are protected by querying with both:
-- employee ID
-- authenticated companyId
-
-This ensures a company cannot access or modify another company’s data.
-
+- Clean and minimal implementation  
+- No unnecessary features added  
+- Focused on structure, security, and clarity  
