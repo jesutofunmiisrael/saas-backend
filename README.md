@@ -9,7 +9,7 @@ It demonstrates a clean multi-tenant architecture where:
 - Company admins manage employees within their organization
 - Employees belong strictly to their company
 
-The focus is on simplicity, clean structure, and secure backend logic.
+The focus is on simplicity, clean structure, secure backend logic, and preparing the codebase for scaling.
 
 ---
 
@@ -27,6 +27,7 @@ The focus is on simplicity, clean structure, and secure backend logic.
 /config  
 /models  
 /controllers  
+/services  
 /routes  
 /middleware  
 /utils  
@@ -53,7 +54,7 @@ JWT_SECRET=your_secret_key
 
 ## MongoDB Setup
 
-Add this IP in MongoDB Atlas:
+Add this IP in MongoDB Atlas:  
 0.0.0.0/0  
 
 ---
@@ -99,14 +100,14 @@ Authorization: Bearer <token>
 ## Architecture Decisions
 
 ### Multi-Tenant Isolation
-All operations are strictly scoped using the authenticated user's companyId.
+All operations are strictly scoped using the authenticated user's `companyId`.
 
-- Backend does NOT trust client-provided companyId  
-- All queries use req.user.companyId  
-- Prevents cross-company data access  
+- Backend does NOT trust client-provided companyId
+- All queries use `req.user.companyId`
+- Prevents cross-company data access
 
 Example:
-Employee operations use both employee ID and companyId to ensure strict isolation.
+Employee operations use both employee ID and authenticated companyId to ensure strict isolation.
 
 ---
 
@@ -118,22 +119,58 @@ Roles:
 - employee
 
 Rules:
-- Superadmin creates companies  
-- Admin manages employees  
-- Employee has restricted access  
+- Superadmin creates companies
+- Admin manages employees
+- Employee has restricted access
 
 ---
 
-### Access Enforcement
+### Service Layer Refactor
 
-- Only admins can create employees  
-- Employees cannot create or modify other employees  
-- All access control is enforced in backend middleware  
+The codebase has been refactored to follow:
+
+controllers → services → models
+
+This keeps:
+- controllers focused on request/response handling
+- services responsible for business logic
+- models responsible for database structure
+
+This improves maintainability and makes the code easier to scale.
+
+---
+
+### Validation and Error Handling
+
+Basic request validation has been added to keep the implementation simple and reliable.
+
+Examples:
+- missing required fields
+- missing company context
+- invalid employee ID
+
+API responses now follow a consistent format:
+
+Success:
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": {}
+}
+
+Error:
+{
+  "success": false,
+  "message": "Error message"
+}
+
+Sensitive data such as passwords are not returned in API responses.
 
 ---
 
 ## Notes
 
-- Clean and minimal implementation  
-- No unnecessary features added  
-- Focused on structure, security, and clarity  
+- Clean and minimal implementation
+- No unnecessary features added
+- Focused on structure, security, and clarity
+- Prepared for future scaling into larger product modules
