@@ -9,16 +9,16 @@ It demonstrates a clean multi-tenant architecture where:
 - Company admins manage employees within their organization
 - Employees belong strictly to their company
 
-The focus is on simplicity, clean structure, secure backend logic, and preparing the codebase for scaling.
+The focus is on clean structure, secure backend logic, and preparing the system for scalability.
 
 ---
 
 ## Tech Stack
-- Node.js
-- Express.js
-- MongoDB (Mongoose)
-- JWT Authentication
-- Bcrypt
+- Node.js  
+- Express.js  
+- MongoDB (Mongoose)  
+- JWT Authentication  
+- Bcrypt  
 
 ---
 
@@ -102,75 +102,88 @@ Authorization: Bearer <token>
 ### Multi-Tenant Isolation
 All operations are strictly scoped using the authenticated user's `companyId`.
 
-- Backend does NOT trust client-provided companyId
-- All queries use `req.user.companyId`
-- Prevents cross-company data access
-
-Example:
-Employee operations use both employee ID and authenticated companyId to ensure strict isolation.
+- Backend does NOT trust client-provided companyId  
+- All queries use `req.user.companyId`  
+- Prevents cross-company data access  
 
 ---
 
 ### Role-Based Access Control
 
 Roles:
-- superadmin
-- admin
-- employee
+- superadmin  
+- admin  
+- employee  
 
 Rules:
-- Superadmin creates companies
-- Admin manages employees
-- Employee has restricted access
+- Superadmin creates companies  
+- Admin manages employees  
+- Employee has restricted access  
 
 ---
 
-### Service Layer Refactor
+## Service Layer Architecture
 
-The codebase has been refactored to follow:
+The codebase follows a structured pattern:
 
-controllers → services → models
+controllers → services → models  
 
-This keeps:
-- controllers focused on request/response handling
-- services responsible for business logic
-- models responsible for database structure
+- Controllers handle request/response only  
+- Services handle business logic and validation  
+- Models handle database structure  
 
-This improves maintainability and makes the code easier to scale.
+This separation improves maintainability and scalability.
 
 ---
 
-### Validation and Error Handling
+## Validation Strategy
 
-Basic request validation has been added to keep the implementation simple and reliable.
+Validation is handled inside services using a consistent pattern.
 
 Examples:
-- missing required fields
-- missing company context
-- invalid employee ID
+- Missing required fields  
+- Missing company context  
+- Invalid employee ID  
 
-API responses now follow a consistent format:
+All validation errors are treated as expected application errors.
 
-Success:
+---
+
+## Error Handling
+
+The application uses a structured error handling approach:
+
+- Expected errors use a custom AppError class  
+- Unexpected errors return a generic internal server error  
+
+Response format is consistent across all endpoints:
+
+### Success
 {
   "success": true,
   "message": "Operation successful",
   "data": {}
 }
 
-Error:
+### Error
 {
   "success": false,
   "message": "Error message"
 }
 
-Sensitive data such as passwords are not returned in API responses.
+---
+
+## Security Notes
+
+- Passwords are hashed using bcrypt  
+- Sensitive data (like passwords) is never returned in responses  
+- Access control is enforced at the backend level  
 
 ---
 
 ## Notes
 
-- Clean and minimal implementation
-- No unnecessary features added
-- Focused on structure, security, and clarity
-- Prepared for future scaling into larger product modules
+- Clean and minimal implementation  
+- No unnecessary features added  
+- Focused on structure, security, and clarity  
+- Designed to scale beyond simple use cases  
