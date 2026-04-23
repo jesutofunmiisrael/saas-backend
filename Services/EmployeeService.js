@@ -1,28 +1,41 @@
-
 import bcrypt from "bcryptjs";
-import User from "../MODEL/User.js";
-import Employee from "../MODEL/Employee.js"
 import mongoose from "mongoose";
+import User from "../MODEL/User.js";
+import Employee from "../MODEL/Employee.js";
+import AppError from "../Utils/AppError.js";
 
-export const createEmployeeService = async (data, companyId) => {
-  const { name, email, position, password } = data;
-
-  if (!name || !email || !password) {
-    throw new Error("Missing required fields");
-  }
-
+const validateCompanyContext = (companyId) => {
   if (!companyId) {
-    throw new Error("Company context missing");
+    throw new AppError("Company context missing", 403);
   }
+};
+
+const validateEmployeePayload = ({ name, email, password }, requirePassword = true) => {
+  if (!name || !email || (requirePassword && !password)) {
+    throw new AppError("Missing required fields", 400);
+  }
+};
+
+const validateEmployeeId = (employeeId) => {
+  if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+    throw new AppError("Invalid employee ID", 400);
+  }
+};
+
+export const createCompanyEmployee = async (payload, companyId) => {
+  const { name, email, position, password } = payload;
+
+  validateCompanyContext(companyId);
+  validateEmployeePayload({ name, email, password });
 
   const existingUser = await User.findOne({ email, companyId });
   if (existingUser) {
-    throw new Error("User already exists");
+    throw new AppError("User already exists", 409);
   }
 
   const existingEmployee = await Employee.findOne({ email, companyId });
   if (existingEmployee) {
-    throw new Error("Employee already exists");
+    throw new AppError("Employee already exists", 409);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -54,34 +67,25 @@ export const createEmployeeService = async (data, companyId) => {
   };
 };
 
+export const getEmployeesByCompany = async (companyId) => {
+  validateCompanyContext(companyId);
 
-export const getCompanyEmployeesService = async (companyId) => {
-  if (!companyId) {
-    throw new Error("Company context missing");
-  }
-
-  const employees = await Employee.find({ companyId });
-  return employees;
+  return await Employee.find({ companyId });
 };
 
-export const updateEmployeeService = async (id, data, companyId) => {
-  const { name, email, position } = data;
+export const updateCompanyEmployee = async (employeeId, payload, companyId) => {
+  const { name, email, position } = payload;
 
-  if (!companyId) {
-    throw new Error("Company context missing");
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("Invalid employee ID");
-  }
+  validateCompanyContext(companyId);
+  validateEmployeeId(employeeId);
 
   const employee = await Employee.findOne({
-    _id: id,
+    _id: employeeId,
     companyId,
   });
 
   if (!employee) {
-    throw new Error("Employee not found or access denied");
+    throw new AppError("Employee not found or access denied", 404);
   }
 
   employee.name = name ?? employee.name;
