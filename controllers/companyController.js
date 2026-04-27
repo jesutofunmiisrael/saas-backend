@@ -1,4 +1,7 @@
 import { createCompanyAccount } from "../Services/CompanyService.js";
+import { updateCompanyProfile } from "../Services/CompanyService.js";
+
+
 
 const sendSuccess = (res, statusCode, message, data) => {
   return res.status(statusCode).json({
@@ -24,5 +27,30 @@ export const createCompany = async (req, res) => {
     return sendSuccess(res, 201, "Company created successfully", result);
   } catch (error) {
     return sendError(res, error);
+  }
+};
+
+
+
+
+export const updateCompany = async (req, res) => {
+  try {
+    const result = await updateCompanyProfile(
+      req.body,
+      req.user.companyId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Company profile updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
   }
 };

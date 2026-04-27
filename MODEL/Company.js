@@ -7,6 +7,15 @@ const companySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    email: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+    },
+
     ownerUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -18,7 +27,7 @@ const companySchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Company = mongoose.model("Company", companySchema);
