@@ -32,7 +32,6 @@ export const createCompany = async (req, res) => {
 
 
 
-
 export const updateCompany = async (req, res) => {
   try {
     const result = await updateCompanyProfile(
@@ -46,6 +45,15 @@ export const updateCompany = async (req, res) => {
       data: result,
     });
   } catch (error) {
+    // Handle MongoDB duplicate key error
+    
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already in use",
+      });
+    }
+
     const statusCode = error.statusCode || 500;
 
     return res.status(statusCode).json({

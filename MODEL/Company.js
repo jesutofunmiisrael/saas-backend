@@ -11,9 +11,14 @@ const companySchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
+      unique: true,        
+      lowercase: true,     
+      trim: true,          
     },
+
     description: {
       type: String,
+      trim: true,
     },
 
     ownerUserId: {
@@ -21,14 +26,16 @@ const companySchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
+
 
 const Company = mongoose.model("Company", companySchema);
 
