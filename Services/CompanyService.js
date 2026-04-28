@@ -57,31 +57,47 @@ return {
 
 
 
-
-
 export const updateCompanyProfile = async (payload, companyId) => {
   const { name, email, description } = payload;
 
+  // Validate company context
   if (!companyId) {
     throw new AppError("Company context missing", 403);
   }
 
-  if (!name || !email) {
+  // Normalize inputs
+  const nameNormalized = name?.trim();
+  const emailNormalized = email?.trim().toLowerCase();
+
+  
+  if (!nameNormalized || !emailNormalized) {
     throw new AppError("Name and email are required", 400);
   }
 
+  // Check if company exists
   const company = await Company.findById(companyId);
-
   if (!company) {
     throw new AppError("Company not found", 404);
   }
 
-  company.name = name;
-  company.email = email;
-  company.description = description ?? company.description;
+  // Check email uniqueness (excluding current company)
+  const existingCompany = await Company.findOne({ email: emailNormalized });
+  if (
+    existingCompany &&
+    existingCompany._id.toString() !== companyId.toString()
+  ) {
+    throw new AppError("Email already in use", 409);
+  }
+
+  // Update fields
+  company.name = nameNormalized;
+  company.email = emailNormalized;
+  company.description =
+    description?.trim() ?? company.description;
 
   await company.save();
 
+  // Return clean response
   return {
     id: company._id,
     name: company.name,

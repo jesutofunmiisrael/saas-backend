@@ -172,6 +172,7 @@ Error:
 
 ## Module 1: Company Settings & Profile
 
+
 ### Description
 Allows a company to update its basic profile information.
 
@@ -205,3 +206,12 @@ PUT /api/company/update
 - No unnecessary features added
 - Focused on backend structure and scalability
 - Designed to support real product development
+
+
+## Module 1 Context
+
+Module 1 introduces basic company profile management within the SaaS system.
+
+This module fits into the overall architecture by allowing each tenant (company) to manage its own identity while maintaining strict isolation using authenticated context.
+
+It builds on the existing multi-tenant foundation and prepares the system for more advanced modules involving company-specific configurations and workflows.
